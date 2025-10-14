@@ -9,6 +9,7 @@ variable "server_definitions" {
     instance_type = string
     script_file = string
     tags = map(string)
+    root_volume_size = number
   }))
 
   default = {
@@ -62,10 +63,10 @@ resource "aws_instance" "server" {
   instance_type               = each.value.instance_type
   key_name                    = aws_key_pair.ec2-server.key_name
   vpc_security_group_ids      = [aws_security_group.ec2-server-sg.id]
-  subnet_id                   = aws.subnet.public.id
+  subnet_id                   = data.aws_subnet.public.id
 
   associate_public_ip_address = true
-  user_data                   = file(each.value.script_file)  
+  user_data_base64            = filebase64(each.value.script_file)  
   tags                        = merge(each.value.tags, { "Project" = "ECS-Deployer" })
 
   root_block_device {
@@ -75,5 +76,10 @@ resource "aws_instance" "server" {
   }
 }
 
-
+resource "aws_ec2_instance_state" "server_state" {
+  depends_on = [aws_instance.server]
+  for_each = aws_instance.server
+  instance_id = each.value.id
+  state = "running"
+}
      
