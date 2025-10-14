@@ -13,7 +13,7 @@ resource "aws_instance" "server" {
   user_data = file("ec2-install/jenkins.sh")
 
   tags = {
-    Name = "Jenkins-Server"
+    Name = "Jenkins"
   }
 }
 
