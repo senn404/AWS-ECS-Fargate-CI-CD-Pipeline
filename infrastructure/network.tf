@@ -2,8 +2,8 @@ data "aws_vpc" "default" {
   default = true
 }
 
-resource "aws_security_group" "jenkins-sg" {
-  name        = "jenkins-sg"
+resource "aws_security_group" "ec2-server-sg" {
+  name        = "ec2-server-sg"
   description = "Security group for Jenkins server"
   vpc_id = data.aws_vpc.default.id
 
