@@ -17,9 +17,8 @@ variable "server_definitions" {
       instance_type = "t3.medium"
       script_file   = "ec2-install/jenkins.sh"
       tags = {
-        Name = "Jenkins"
+        Name = "jenkins"
       }
-
       root_volume_size = 20
     }
 
@@ -27,9 +26,8 @@ variable "server_definitions" {
       instance_type = "t3.medium"
       script_file   = "ec2-install/sonar-qube.sh"
       tags = {
-        Name = "SonarQube"
+        Name = "sonar-qube"
       }
-
       root_volume_size = 20
     }
 
@@ -37,9 +35,8 @@ variable "server_definitions" {
       instance_type = "t3.medium"
       script_file   = "ec2-install/nexus.sh"
       tags = {
-        Name = "Nexus"
+        Name = "nexus"
       }
-
       root_volume_size = 20
     }
 
@@ -47,9 +44,8 @@ variable "server_definitions" {
       instance_type = "t3.small"
       script_file   = "ec2-install/grafana.sh"
       tags = {
-        Name = "Grafana"
+        Name = "grafana"
       }
-
       root_volume_size = 20
     }
   }
@@ -57,13 +53,13 @@ variable "server_definitions" {
 }
 
 resource "aws_instance" "server" {
-  ami                         = "ami-088d74defe9802f14"  
+  ami                         = "ami-02fb5ef6a4a46a62d"  
   for_each                    = var.server_definitions
 
   instance_type               = each.value.instance_type
   key_name                    = aws_key_pair.ec2-server.key_name
   vpc_security_group_ids      = [aws_security_group.ec2-server-sg.id]
-  subnet_id                   = data.aws_subnet.public.id
+  subnet_id                   = data.aws_subnets.public.ids[0]
 
   associate_public_ip_address = true
   user_data_base64            = filebase64(each.value.script_file)  
@@ -76,10 +72,4 @@ resource "aws_instance" "server" {
   }
 }
 
-resource "aws_ec2_instance_state" "server_state" {
-  depends_on = [aws_instance.server]
-  for_each = aws_instance.server
-  instance_id = each.value.id
-  state = "running"
-}
-     
+ 
