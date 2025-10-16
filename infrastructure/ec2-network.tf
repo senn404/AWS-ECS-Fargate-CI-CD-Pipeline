@@ -84,7 +84,8 @@ resource "aws_security_group" "alb" {
 
 # Yeu cau cert tu ACM truoc
 resource "aws_acm_certificate" "ec2-server-cert" {
-  domain_name       = "*.huanops.com"
+  domain_name       = "huanops.com"
+  subject_alternative_names = ["*.huanops.com"]
   validation_method = "DNS"
 
   lifecycle {
@@ -102,24 +103,16 @@ data "aws_route53_zone" "domain" {
 }
 
 resource "aws_route53_record" "cert_validation" {
-  for_each = {
-    for dvo in aws_acm_certificate.ec2-server-cert.domain_validation_options : dvo.domain_name => {
-      name   = dvo.resource_record_name
-      type   = dvo.resource_record_type
-      record = dvo.resource_record_value
-    }...
-  }
-
   zone_id = data.aws_route53_zone.domain.zone_id
-  name    = each.value[0].name
-  type    = each.value[0].type
+  name    = tolist(aws_acm_certificate.ec2-server-cert.domain_validation_options)[0].resource_record_name
+  type    = tolist(aws_acm_certificate.ec2-server-cert.domain_validation_options)[0].resource_record_type
   ttl     = 60
-  records = [each.value[0].record]
+  records = [tolist(aws_acm_certificate.ec2-server-cert.domain_validation_options)[0].resource_record_value]
 }
 # Đảm bảo validate cert trước khi tạo resource khác
 resource "aws_acm_certificate_validation" "server_cert_validation" {
   certificate_arn         = aws_acm_certificate.ec2-server-cert.arn
-  validation_record_fqdns = [for record in aws_route53_record.cert_validation : record.fqdn]  
+  validation_record_fqdns = [aws_route53_record.cert_validation.fqdn]  
 
   timeouts {
     create = "10m"
@@ -170,7 +163,6 @@ resource "aws_lb_listener" "https_listener" {
     }
   }
 }
-
 resource "aws_lb_listener_rule" "server_rule" {
 
   for_each = var.server_definitions
