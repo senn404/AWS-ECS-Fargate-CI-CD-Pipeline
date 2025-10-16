@@ -34,6 +34,13 @@ resource "aws_security_group" "ec2-server-sg" {
     security_groups = [aws_security_group.alb.id]
   }
   ingress {
+    description = "Allow web access"
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
     description = "Allow SSH access" 
     from_port   = 22
     to_port     = 22
@@ -60,18 +67,24 @@ resource "aws_security_group" "alb" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  egress {
-    from_port   = 8080
-    to_port     = 8080
+  ingress {
+    description = "Allow HTTPS access"
+    from_port   = 80
+    to_port     = 80
     protocol    = "tcp"
-    security_groups = [aws_security_group.ec2-server-sg.id]
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
   } 
 }
 
 # Yeu cau cert tu ACM truoc
 resource "aws_acm_certificate" "ec2-server-cert" {
   domain_name       = "*.huanops.com"
-  subject_alternative_names = ["huanops.com"]
   validation_method = "DNS"
 
   lifecycle {
@@ -94,14 +107,14 @@ resource "aws_route53_record" "cert_validation" {
       name   = dvo.resource_record_name
       type   = dvo.resource_record_type
       record = dvo.resource_record_value
-    }
+    }...
   }
 
   zone_id = data.aws_route53_zone.domain.zone_id
-  name    = each.value.name
-  type    = each.value.type
+  name    = each.value[0].name
+  type    = each.value[0].type
   ttl     = 60
-  records = [each.value.record]
+  records = [each.value[0].record]
 }
 # Đảm bảo validate cert trước khi tạo resource khác
 resource "aws_acm_certificate_validation" "server_cert_validation" {
@@ -127,8 +140,23 @@ resource "aws_alb" "ec2-server-alb" {
   
 }
 
+# HTTP listener chuyen huong sang HTTPS
+resource "aws_lb_listener" "http_redirect_listener" {
+  load_balancer_arn = aws_alb.ec2-server-alb.arn
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    type = "redirect"
+    redirect {
+      protocol    = "HTTPS"
+      port        = "443"
+      status_code = "HTTP_301" # 301 Moved Permanently (tối ưu nhất)
+    }
+  }
+}
 resource "aws_lb_listener" "https_listener" {
-  load_balancer_arn = aws_lb.ec2-server-alb.arn
+  load_balancer_arn = aws_alb.ec2-server-alb.arn
   port              = "443"
   protocol          = "HTTPS"
   certificate_arn   = aws_acm_certificate_validation.server_cert_validation.certificate_arn
@@ -159,6 +187,11 @@ resource "aws_lb_listener_rule" "server_rule" {
       values = ["${each.key}.huanops.com"]
     }
   }
+  condition {
+    path_pattern {
+      values = ["/*"] # Khớp với mọi thứ (bao gồm /, /login, /manage, ...)
+    }
+  }
 }
 
 resource "aws_lb_target_group" "server_tg" {
@@ -168,9 +201,9 @@ resource "aws_lb_target_group" "server_tg" {
   protocol = "HTTP"
   vpc_id   = data.aws_vpc.default.id
   health_check {
-    path                = "/"
+    path                = var.server_definitions[each.key].health_check_path
     interval            = 30
-    timeout             = 5
+    timeout             = 20
     healthy_threshold   = 2
     unhealthy_threshold = 2
     matcher             = "200-399"

@@ -9,6 +9,7 @@ variable "server_definitions" {
     instance_type = string
     script_file = string
     tags = map(string)
+    health_check_path = string
     root_volume_size = number
   }))
 
@@ -19,6 +20,7 @@ variable "server_definitions" {
       tags = {
         Name = "jenkins"
       }
+      health_check_path = "/health"
       root_volume_size = 20
     }
 
@@ -28,6 +30,7 @@ variable "server_definitions" {
       tags = {
         Name = "sonar-qube"
       }
+      health_check_path = "/api/system/status"
       root_volume_size = 20
     }
 
@@ -37,6 +40,7 @@ variable "server_definitions" {
       tags = {
         Name = "nexus"
       }
+      health_check_path = "/"
       root_volume_size = 20
     }
 
@@ -46,6 +50,7 @@ variable "server_definitions" {
       tags = {
         Name = "grafana"
       }
+      health_check_path = "/api/health"
       root_volume_size = 20
     }
   }
