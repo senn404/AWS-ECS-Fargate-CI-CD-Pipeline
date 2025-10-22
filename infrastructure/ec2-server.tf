@@ -45,7 +45,7 @@ variable "server_definitions" {
     }
 
     grafana = {
-      instance_type = "t3.small"
+      instance_type = "t3.medium"
       script_file   = "ec2-install/grafana.sh"
       tags = {
         Name = "grafana"
