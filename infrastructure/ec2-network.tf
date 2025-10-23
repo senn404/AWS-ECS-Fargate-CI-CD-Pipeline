@@ -27,19 +27,13 @@ resource "aws_security_group" "ec2-server-sg" {
   vpc_id = data.aws_vpc.default.id
 
   ingress {
-    description = "Allow web access"
+    description = "Allow web access from ALB"
     from_port   = 8080
     to_port     = 8080
     protocol    = "tcp"
     security_groups = [aws_security_group.alb.id]
   }
-  ingress {
-    description = "Allow web access"
-    from_port   = 8080
-    to_port     = 8080
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+  
   ingress {
     description = "Allow SSH access" 
     from_port   = 22
