@@ -158,7 +158,6 @@ resource "aws_lb_listener" "https_listener" {
   }
 }
 resource "aws_lb_listener_rule" "server_rule" {
-
   for_each = var.server_definitions
   listener_arn = aws_lb_listener.https_listener.arn
   priority     = index(keys(var.server_definitions), each.key) + 10 # Priority must be unique and between 1-50000
