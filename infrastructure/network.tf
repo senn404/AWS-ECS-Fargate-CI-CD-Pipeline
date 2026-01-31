@@ -69,7 +69,7 @@ resource "aws_route_table_association" "public-subnet-1b-assoc" {
 resource "aws_security_group" "ec2-server-sg" {
   name        = "ec2-server-sg"
   description = "Security group for server"
-  vpc_id = data.aws_vpc.default.id
+  vpc_id = aws_vpc.main-vpc.id
 
   ingress {
     description = "Allow web access from ALB"

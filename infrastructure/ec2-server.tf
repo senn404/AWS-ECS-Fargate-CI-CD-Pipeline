@@ -64,7 +64,7 @@ resource "aws_instance" "server" {
   instance_type               = each.value.instance_type
   key_name                    = aws_key_pair.ec2-server.key_name
   vpc_security_group_ids      = [aws_security_group.ec2-server-sg.id]
-  subnet_id                   = aws_vpc.main-vpc.public_subnets[0]
+  subnet_id                   = aws_subnet.public-subnet-1a.id
 
   associate_public_ip_address = true
   user_data_base64            = filebase64(each.value.script_file)  
