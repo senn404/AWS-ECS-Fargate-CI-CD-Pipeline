@@ -13,4 +13,4 @@ docker run -d \
   -v sonarqube_logs:/opt/sonarqube/logs \
   -v sonarqube_extensions:/opt/sonarqube/extensions \
   --restart always \
-  sonarqube:lts
+  sonarqube:latest
