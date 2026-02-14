@@ -25,3 +25,4 @@ override.tfvars.json
 # Terraform plan output
 *.tfplan
 .terrafom.lock.hcl
+.vscode
