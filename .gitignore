@@ -26,3 +26,4 @@ override.tfvars.json
 *.tfplan
 .terrafom.lock.hcl
 .vscode
+Task.md

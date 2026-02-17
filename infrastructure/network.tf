@@ -24,15 +24,15 @@ resource "aws_subnet" "public-subnet-1b" {
 }
 
 resource "aws_subnet" "private-subnet-1a" {
-  vpc_id                  = aws_vpc.main-vpc.id
-  cidr_block              = "10.0.3.0/24"
-  availability_zone       = "ap-southeast-1a"
+  vpc_id            = aws_vpc.main-vpc.id
+  cidr_block        = "10.0.3.0/24"
+  availability_zone = "ap-southeast-1a"
 }
 
 resource "aws_subnet" "private-subnet-1b" {
-  vpc_id                  = aws_vpc.main-vpc.id
-  cidr_block              = "10.0.4.0/24"
-  availability_zone       = "ap-southeast-1b"
+  vpc_id            = aws_vpc.main-vpc.id
+  cidr_block        = "10.0.4.0/24"
+  availability_zone = "ap-southeast-1b"
 }
 
 resource "aws_internet_gateway" "igw" {
@@ -69,21 +69,21 @@ resource "aws_route_table_association" "public-subnet-1b-assoc" {
 resource "aws_security_group" "ec2-server-sg" {
   name        = "ec2-server-sg"
   description = "Security group for server"
-  vpc_id = aws_vpc.main-vpc.id
+  vpc_id      = aws_vpc.main-vpc.id
 
   ingress {
-    description = "Allow web access from ALB"
-    from_port   = 8080
-    to_port     = 8080
-    protocol    = "tcp"
+    description     = "Allow web access from ALB"
+    from_port       = 8080
+    to_port         = 8080
+    protocol        = "tcp"
     security_groups = [aws_security_group.alb.id]
   }
   ingress {
-    description = "Allow SSH access" 
+    description = "Allow SSH access"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] 
+    cidr_blocks = ["0.0.0.0/0"]
   }
   egress {
     from_port   = 0
@@ -93,3 +93,22 @@ resource "aws_security_group" "ec2-server-sg" {
   }
 }
 
+resource "aws_security_group" "slave-sg" {
+  name        = "slave-sg"
+  description = "Security group for slave"
+  vpc_id      = aws_vpc.main-vpc.id
+
+  ingress {
+    description     = "Allow SSH access"
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
+    security_groups = [aws_security_group.ec2-server-sg.id]
+  }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
