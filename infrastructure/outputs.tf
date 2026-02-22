@@ -14,6 +14,23 @@ output "ec2-info" {
     # 'key' là tên logic của instance (ví dụ: "jenkins")
     # '=>' theo sau là giá trị tương ứng (một object chứa thông tin)
     key => {
+      id                   = inst.id
+      public_ip            = inst.public_ip
+      public_dns           = inst.public_dns
+      private_ip           = inst.private_ip
+      private_dns          = inst.private_dns
+      instance_type        = inst.instance_type
+      iam_instance_profile = inst.iam_instance_profile
+      state                = inst.instance_state
+      tags                 = inst.tags
+    }
+  }
+}
+
+output "slave" {
+  value = {
+    for key, inst in aws_instance.slave :
+    key => {
       id            = inst.id
       public_ip     = inst.public_ip
       public_dns    = inst.public_dns

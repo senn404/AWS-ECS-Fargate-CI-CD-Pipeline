@@ -78,12 +78,39 @@ resource "aws_security_group" "ec2-server-sg" {
     protocol        = "tcp"
     security_groups = [aws_security_group.alb.id]
   }
-  ingress {
-    description = "Allow SSH access"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_security_group" "jenkins-sg" {
+  name        = "jenkins-sg"
+  description = "Security group for jenkins"
+  vpc_id      = aws_vpc.main-vpc.id
+
+  ingress {
+    description     = "Allow web access from ALB"
+    from_port       = 8080
+    to_port         = 8080
+    protocol        = "tcp"
+    security_groups = [aws_security_group.alb.id]
+  }
+  ingress {
+    description     = "Allow Jenkins API from slave"
+    from_port       = 8080
+    to_port         = 8080
+    protocol        = "tcp"
+    security_groups = [aws_security_group.slave-sg.id]
+  }
+  ingress {
+    description     = "Allow JNLP from slave"
+    from_port       = 50000
+    to_port         = 50000
+    protocol        = "tcp"
+    security_groups = [aws_security_group.slave-sg.id]
   }
   egress {
     from_port   = 0
@@ -98,13 +125,6 @@ resource "aws_security_group" "slave-sg" {
   description = "Security group for slave"
   vpc_id      = aws_vpc.main-vpc.id
 
-  ingress {
-    description     = "Allow SSH access"
-    from_port       = 22
-    to_port         = 22
-    protocol        = "tcp"
-    security_groups = [aws_security_group.ec2-server-sg.id]
-  }
   egress {
     from_port   = 0
     to_port     = 0
