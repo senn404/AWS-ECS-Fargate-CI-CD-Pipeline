@@ -9,5 +9,4 @@ resource "aws_ecr_repository" "backend_repo" {
   tags = {
     Name = "backend-repo"
   }
-
 }
