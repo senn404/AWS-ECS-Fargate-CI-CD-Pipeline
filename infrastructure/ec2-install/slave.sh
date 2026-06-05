@@ -11,3 +11,7 @@ sudo dnf install maven -y
 
 sudo dnf install git -y
 
+sudo dnf install java-21-amazon-corretto-devel -y
+sudo update-alternatives --config java
+
+

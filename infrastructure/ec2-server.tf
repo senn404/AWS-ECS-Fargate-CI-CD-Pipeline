@@ -63,7 +63,7 @@ variable "slave_definitions" {
 
   default = {
     "slave-1" = {
-      instance_type        = "t3.medium"
+      instance_type        = "t3.small"
       script_file          = "ec2-install/slave.sh"
       root_volume_size     = 20
       iam_instance_profile = "slave"
@@ -73,7 +73,7 @@ variable "slave_definitions" {
     }
 
     "slave-2" = {
-      instance_type        = "t3.medium"
+      instance_type        = "t3.small"
       script_file          = "ec2-install/slave.sh"
       root_volume_size     = 20
       iam_instance_profile = "slave"
